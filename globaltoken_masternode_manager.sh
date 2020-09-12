@@ -34,7 +34,7 @@
 
 
 # Script version
-VERSION=0.8a
+VERSION=0.9
 
 
 # Donation addresses
@@ -128,9 +128,11 @@ CHAIN_ZIP=$(echo $CHAIN_URL | awk -F'/' '{print $NF}')
 NODES_TXT=$(echo $NODES_URL | awk -F'/' '{print $NF}')
 DUPMN_SH=$(echo $DUPMN_URL | awk -F'/' '{print $NF}')
 
-# Enable functions
-DUPMN_ENABLE="true"                                                                                                  # Enable/Disable dupmn. Disable:false, enable:true.
-CHBLK_ENABLE="false"                                                                                                 # Enable checkblockhash                                                                             					
+# Enable functions (enable:true, disable:false)
+IPV4_ENABLE="true"                                                                                                   # Enable/disable IPv4.
+IPV6_ENABLE="true"                                                                                                   # Enable/disable IPv6.
+DUPMN_ENABLE="true"                                                                                                  # Enable/disable dupmn.
+CHBLK_ENABLE="false"                                                                                                 # Enable/disable checkblockhash.                                                                          					
 
 
 #########################################################################################################
@@ -208,6 +210,11 @@ ARG2=$2                                             # Second argument
 ARG3=$3                                             # Third argument
 ARG1=$(echo $ARG1 | sed -r 's/[-]//gi')             # Remove '-' characters from first argument
 ARG1=${ARG1,,}                                      # Force lower case for first argument
+IPV4_ENABLE=${IPV4_ENABLE,,}                        # Force lower case
+IPV6_ENABLE=${IPV6_ENABLE,,}                        # Force lower case
+DUPMN_ENABLE=${DUPMN_ENABLE,,}                      # Force lower case
+CHBLK_ENABLE=${CHBLK_ENABLE,,}                      # Force lower case
+
 
 if [ -f /bin/readlink ]; then
     SCRIPT_FULL=$(readlink -nf $0)                  # Script real file name (not symbolic link) including full path
@@ -1236,9 +1243,16 @@ function get_localip() {
     echo -e "${D}The masternode local IP address will be defined as the 'bind' IP address in the masternode config file.${N}"
     echo
     declare -a ARRAY
-    ARRAY+=($(ip addr show scope global | awk '$1 ~ /^inet/ {print $2}' | awk -F "/" '{print $1}'))
+	ARRAY+=($(ip addr show scope global | awk '$1 ~ /^inet/ {print $2}' | awk -F "/" '{print $1}' ))
     ARRAY+=($(echo "Manually"))
-    ARRAY=($(echo ${ARRAY[@]} | tr [:space:] '\n' | sort -u ))          # Remove duplicates and sort array
+    ARRAY=($(echo ${ARRAY[@]} | tr [:space:] '\n' | sort -u ))          # Remove duplicates and sort array	
+	if [ $IPV4_ENABLE == "false" ]; then
+		ARRAY=($(echo ${ARRAY[@]//*.*/}))								# Remove IPv4 addresses
+		
+	fi
+	if [ $IPV6_ENABLE == "false" ]; then
+		ARRAY=($(echo ${ARRAY[@]//*:*/}))								# Remove IPv6 addresses
+	fi
     echo -e "${D}Please type a number to select the local masternode IP address:${N}"
     INDEX=0
     for RECORD in "${ARRAY[@]}"
@@ -1268,6 +1282,12 @@ function get_localip() {
         done
     fi
     NODE_IP=$RESULT
+	if [[ $NODE_IP == *.*.*.* ]]; then
+		IPV6_ENABLE="false"
+	else
+		IPV4_ENABLE="false"
+	fi
+	
     echo
     echo -e "${Y}Selected masternode local IP address (bind): ${P}$NODE_IP${N}"
 }
@@ -1285,18 +1305,34 @@ function get_externalip() {
     echo
     echo -e "${D}The masternode external IP address will be defined as 'externalip' and 'masternodeaddr' in the masternode config file.${N}"
     echo
-    
-    EXT_IP4=($(/usr/bin/curl -s4 v4.ident.me))
-    EXT_IP6=($(/usr/bin/curl -s6 v6.ident.me))
+    if [[ $IPV4_ENABLE == "true" ]]; then
+		EXT_IP4=($(/usr/bin/curl -s4 v4.ident.me))
+	else
+		EXT_IP4="172.0.0.1"      # IPv4 Loopback address (dummy address will not be used)
+	fi
+	
+	if [[ $IPV6_ENABLE == "true" ]]; then
+		EXT_IP6=($(/usr/bin/curl -s6 v6.ident.me))
+	else
+		EXT_IP6="0:0:0:0:0:0:0:1" # IPv6 Loopback address (dummy address will not be used)
+	fi
 
     if ([ $EXT_IP4 != $NODE_IP ] && [ $EXT_IP6 != $NODE_IP ])
     then
         declare -a ARRAY
         ARRAY+=($(echo "$NODE_IP"))
-        ARRAY+=($(echo "$EXT_IP4"))
-        ARRAY+=($(echo "$EXT_IP6"))
+		ARRAY+=($(echo "$EXT_IP4"))
+		ARRAY+=($(echo "$EXT_IP6"))
         ARRAY+=($(echo "Manually"))
-        ARRAY=($(echo ${ARRAY[@]} | tr [:space:] '\n' | sort -u ))              # Remove duplicates and sort array
+        ARRAY=($(echo ${ARRAY[@]} | tr [:space:] '\n' | sort -u ))          # Remove duplicates and sort array
+		ARRAY=($(echo ${ARRAY[@]//172.0.0.1/}))                             # Remove dummy IPv4 addresses
+		ARRAY=($(echo ${ARRAY[@]//0:0:0:0:0:0:0:1/}))						# Remove dummy IPv6 addresses		
+		if [ $IPV4_ENABLE == "false" ]; then
+			ARRAY=($(echo ${ARRAY[@]//*.*/}))								# Remove IPv4 addresses
+		fi
+		if [ $IPV6_ENABLE == "false" ]; then
+			ARRAY=($(echo ${ARRAY[@]//*:*/}))								# Remove IPv6 addresses
+		fi
         echo -e "${D}Please type a number to select the masternode external IP address:${N}"
         INDEX=0
         for RECORD in "${ARRAY[@]}"
@@ -1338,10 +1374,18 @@ function get_externalip() {
             declare -a ARRAY
             ARRAY+=($(echo "$NODE_IP"))
             ARRAY+=($(echo "$EXT_IP4"))
-            ARRAY+=($(echo "$EXT_IP6"))
+			ARRAY+=($(echo "$EXT_IP6"))
             ARRAY+=($(ip addr show scope global | awk '$1 ~ /^inet/ {print $2}' | awk -F "/" '{print $1}'))
             ARRAY+=($(echo "Manually"))
-            ARRAY=($(echo ${ARRAY[@]} | tr [:space:] '\n' | sort -u ))              # Remove duplicates and sort array
+            ARRAY=($(echo ${ARRAY[@]} | tr [:space:] '\n' | sort -u ))          # Remove duplicates and sort array
+			ARRAY=($(echo ${ARRAY[@]//172.0.0.1/}))                             # Remove dummy IPv4 addresses
+			ARRAY=($(echo ${ARRAY[@]//0:0:0:0:0:0:0:1/}))						# Remove dummy IPv6 addresses			
+			if [ $IPV4_ENABLE == "false" ]; then
+				ARRAY=($(echo ${ARRAY[@]//*.*/}))								# Remove IPv4 addresses
+			fi
+			if [ $IPV6_ENABLE == "false" ]; then
+				ARRAY=($(echo ${ARRAY[@]//*:*/}))								# Remove IPv6 addresses
+			fi			
             echo -e "${D}Please type a number to select masternode external IP address:${N}"
             INDEX=0
             for RECORD in "${ARRAY[@]}"
@@ -2585,6 +2629,11 @@ if [[ $ARG1 = "donation" ]] || [[ $ARG1 = "donate" ]]; then
     donation                     
 fi
 
+if [[ $ARG1 == "test" ]]; then
+    VALIDCMD="true"
+    get_localip
+    get_externalip
+fi
 
 if [[ $ARG1 == "start"            ]]; then VALIDCMD="true"; node_start                  ; fi
 if [[ $ARG1 == "stop"             ]]; then VALIDCMD="true"; node_stop                   ; fi
