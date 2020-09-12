@@ -1,0 +1,8 @@
+addnode=globaltoken.org
+addnode=pool.cryptopowered.club
+addnode=46.232.250.20
+addnode=31.220.42.215
+addnode=93.177.64.79
+addnode=66.248.206.47
+addnode=188.68.56.82
+addnode=62.113.246.183
