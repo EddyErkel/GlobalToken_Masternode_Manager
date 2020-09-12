@@ -90,7 +90,7 @@ CHAIN_DATA="blocks chainstate peers.dat"                                        
                                                                                                     				# These folders and files will also be deleted when installing bootstrap.   
 
 # Masternode Addnodes URL
-#NODES_URL="https://github.com/globaltoken/globaltoken/releases/download/3.2.1/addnodes.txt"         				# Addnodes URL.
+NODES_URL="https://raw.githubusercontent.com/EddyErkel/GlobalToken_Masternode_Manager/master/addnodes.txt"  		# Addnodes URL.
 NODES_TXT=$(echo $NODES_URL | awk -F'/' '{print $NF}')                                              				# Get addnodes.txt file name from URL.
 
 # Masternode related website URLs (shown at installation summary)
@@ -505,7 +505,6 @@ function install_binaries() {
         else
             echo
             echo -e "${D}Extracting $COIN_ZIP to $COIN_PATH...${N}"
-		    echo "extract $SCRIPT_DIR/$COIN_ZIP $COIN_PATH"
             extract $SCRIPT_DIR/$COIN_ZIP $COIN_PATH 
             if [ "$?" -gt "0" ]; then
                 echo
@@ -1511,7 +1510,7 @@ function download_addnodes() {
 				echo
             else
 			    # Store downloaded and sort addnode list to variable
-				ADDNODELIST=$(wget -qO- $NODES_URL | sed 's/^M$//' | sort -uV )
+				ADDNODELIST=$(wget -qO- $NODES_URL | sed 's/^M$//')
                 # Check if addnodes are already added to Masternode config file
                 ADDNODESADDED=$(/bin/cat $COIN_FOLDER/$COIN_CONFIG | grep "addnode") #> /dev/null 2>&1
 
