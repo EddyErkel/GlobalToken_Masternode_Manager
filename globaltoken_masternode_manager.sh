@@ -304,7 +304,7 @@ function display_help() {
     if [ ! -z "$EXPL_WWW"  ]; then echo -e "${D}- Explorer website          : ${Y}$EXPL_WWW${N}" ; fi
     if [ ! -z "$REPO_WWW"  ]; then echo -e "${D}- Repository website        : ${Y}$REPO_WWW${N}" ; fi
     if [ ! -z "$MNST_WWW"  ]; then echo -e "${D}- Masternodes Stats website : ${Y}$MNST_WWW${N}"  ; fi
-    if [ ! -z "$CMKT_WWW"  ]; then echo -e "${D}- CoinMarkedCap website     : ${Y}$CMKT_WWW${N}"  ; fi   
+    if [ ! -z "$CMKT_WWW"  ]; then echo -e "${D}- Crypto Markets website    : ${Y}$CMKT_WWW${N}"  ; fi   
     if [[ $DUPMN_ENABLE == "true" ]]; then
 		if [ ! -z "$WWW_DUPMN" ]; then echo -e "${D}- Dupmn website             : ${Y}$WWW_DUPMN${N}"  ; fi
     fi
