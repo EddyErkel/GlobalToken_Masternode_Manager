@@ -130,8 +130,8 @@ DUPMN_SH=$(echo $DUPMN_URL | awk -F'/' '{print $NF}')
 
 # Enable options (enable:true, disable:false)
 IPV4_ENABLE="true"                                                                                                   # Enable/disable IPv4.
-IPV6_ENABLE="true"                                                                                                   # Enable/disable IPv6.
-DUPMN_ENABLE="true"                                                                                                  # Enable/disable dupmn.
+IPV6_ENABLE="false"                                                                                                   # Enable/disable IPv6.
+DUPMN_ENABLE="false"                                                                                                  # Enable/disable dupmn.
 CHBLK_ENABLE="false"                                                                                                 # Enable/disable checkblockhash.                                                                          					
 
 
