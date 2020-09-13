@@ -128,7 +128,7 @@ CHAIN_ZIP=$(echo $CHAIN_URL | awk -F'/' '{print $NF}')
 NODES_TXT=$(echo $NODES_URL | awk -F'/' '{print $NF}')
 DUPMN_SH=$(echo $DUPMN_URL | awk -F'/' '{print $NF}')
 
-# Enable functions (enable:true, disable:false)
+# Enable options (enable:true, disable:false)
 IPV4_ENABLE="true"                                                                                                   # Enable/disable IPv4.
 IPV6_ENABLE="true"                                                                                                   # Enable/disable IPv6.
 DUPMN_ENABLE="true"                                                                                                  # Enable/disable dupmn.
@@ -2629,11 +2629,6 @@ if [[ $ARG1 = "donation" ]] || [[ $ARG1 = "donate" ]]; then
     donation                     
 fi
 
-if [[ $ARG1 == "test" ]]; then
-    VALIDCMD="true"
-    get_localip
-    get_externalip
-fi
 
 if [[ $ARG1 == "start"            ]]; then VALIDCMD="true"; node_start                  ; fi
 if [[ $ARG1 == "stop"             ]]; then VALIDCMD="true"; node_stop                   ; fi
@@ -2668,6 +2663,7 @@ if [[ $ARG1 == "alias"            ]]; then VALIDCMD="true"; add_alias           
 if [[ $ARG1 == "dupmncompletion"  ]]; then VALIDCMD="true"; dupmn-bash-completion       ; fi
 if [[ $ARG1 == "verifyblockhash"  ]]; then VALIDCMD="true"; verifyblockhash              ; fi
 
+
 # Change to originating folder
 cd $CURRENT_DIR >/dev/null 2>&1
 
@@ -2695,5 +2691,4 @@ fi
 # - Version check   
 # - Symbolic lync to script / copy script to /usr/local/bin
 # - Download latest release
-# - add IPv6 yes/no option
 # - remove private IP addresses from external-ip selection
